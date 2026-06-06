@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje Webová Stránka</title>
+    <style>
+        /* Jednoduchý a čistý design (CSS) */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #34495e;
+            padding: 10px;
+        }
+
+        /* Styl tlačítek pro navigaci */
+        .nav-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Stylování obsahu */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Skrytí podstránek, které zrovna nejsou aktivní */
+        .page {
+            display: none;
+        }
+
+        /* Třída pro zobrazení aktivní stránky */
+        .active {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #2c3e50;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Vítejte na mém webu</h1>
+    </header>
+
+    <nav>
+        <button class="nav-btn" onclick="showPage('domu')">Domů</button>
+        <button class="nav-btn" onclick="showPage('o-nas')">O nás</button>
+        <button class="nav-btn" onclick="showPage('sluzby')">Služby</button>
+        <button class="nav-btn" onclick="showPage('kontakt')">Kontakt</button>
+    </nav>
+
+    <div class="container">
+        
+        <section id="domu" class="page active">
+            <h2>Hlavní stránka</h2>
+            <p>Tohle je úvodní stránka vašeho nového webu. Obsah se mění okamžitě po kliknutí na tlačítka nahoře, bez nutnosti znovu načítat celý web.</p>
+        </section>
+
+        <section id="o-nas" class="page">
+            <h2>O nás</h2>
+            <p>Jsme skvělý tým, který se učí programovat webové stránky. Tento web běží na HTML, CSS a špetce JavaScriptu.</p>
+        </section>
+
+        <section id="sluzby" class="page">
+            <h2>Naše Služby</h2>
+            <p>Nabízíme tvorbu jednoduchých, rychlých a přehledných webových aplikací na míru.</p>
+        </section>
+
+        <section id="kontakt" class="page">
+            <h2>Kontakt</h2>
+            <p>Máte dotazy? Napište nám na email: <strong>info@mujweb.cz</strong></p>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 - Moje první HTML stránka</p>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            // Najdeme všechny sekce s třídou 'page' a skryjeme je
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Ukážeme pouze tu stránku, na jejíž tlačítko se kliklo
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.add('active');
+            }
+        }
+    </script>
+
+</body>
+</html>
