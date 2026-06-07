@@ -11,13 +11,6 @@ TRUENAS_PORT = 9000
 
 CONTAINER_NAME = "muj-web"
 
-SSH_COMMAND = (
-    f"docker pull {DOCKER_IMAGE} && "
-    f"docker stop {CONTAINER_NAME} && "
-    f"docker rm {CONTAINER_NAME} && "
-    f"docker run -d --name {CONTAINER_NAME} -p {TRUENAS_PORT}:80 {DOCKER_IMAGE}"
-)
-
 class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
@@ -65,20 +58,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
             import time
             time.sleep(120)
 
-            r = subprocess.run(
-                ["ssh", "-o", "StrictHostKeyChecking=no",
-                 f"{TRUENAS_USER}@{TRUENAS_HOST}", SSH_COMMAND],
-                capture_output=True, text=True
-            )
-            log.append(f"SSH deploy: {r.stdout or r.stderr}")
+            def ssh(cmd):
+                return subprocess.run(
+                    ["ssh", "-o", "StrictHostKeyChecking=no",
+                     f"{TRUENAS_USER}@{TRUENAS_HOST}", cmd],
+                    capture_output=True, text=True
+                )
+
+            r = ssh(f"docker pull {DOCKER_IMAGE}")
+            log.append(f"docker pull: {r.stdout.strip() or r.stderr.strip()}")
+
+            r = ssh(f"docker stop {CONTAINER_NAME}")
+            log.append(f"docker stop: {r.stdout.strip() or r.stderr.strip()}")
+
+            r = ssh(f"docker rm {CONTAINER_NAME}")
+            log.append(f"docker rm: {r.stdout.strip() or r.stderr.strip()}")
+
+            r = ssh(f"docker run -d --name {CONTAINER_NAME} -p {TRUENAS_PORT}:80 {DOCKER_IMAGE}")
+            log.append(f"docker run: {r.stdout.strip() or r.stderr.strip()}")
 
             # 5. Ověření že kontejner běží
-            check = subprocess.run(
-                ["ssh", "-o", "StrictHostKeyChecking=no",
-                 f"{TRUENAS_USER}@{TRUENAS_HOST}",
-                 f"docker ps --filter name={CONTAINER_NAME} --format '{{{{.Status}}}}'"],
-                capture_output=True, text=True
-            )
+            check = ssh(f"docker ps --filter name={CONTAINER_NAME} --format '{{{{.Status}}}}'")
             log.append(f"Stav kontejneru: {check.stdout.strip() or 'Neznamy'}")
 
             return {"ok": r.returncode == 0, "log": log}
