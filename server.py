@@ -59,9 +59,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return {"ok": False, "log": log}
 
             # 4. SSH deploy na TrueNAS
-            log.append("Cekam 90 sekund nez GitHub Actions sestavi novy image...")
+            log.append("Cekam 120 sekund nez GitHub Actions sestavi novy image...")
             import time
-            time.sleep(90)
+            time.sleep(120)
 
             r = subprocess.run(
                 ["ssh", "-o", "StrictHostKeyChecking=no",
@@ -69,6 +69,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 capture_output=True, text=True
             )
             log.append(f"SSH deploy: {r.stdout or r.stderr}")
+
+            # 5. Ověření že kontejner běží
+            check = subprocess.run(
+                ["ssh", "-o", "StrictHostKeyChecking=no",
+                 f"{TRUENAS_USER}@{TRUENAS_HOST}",
+                 f"docker ps --filter ancestor={DOCKER_IMAGE} --format '{{{{.Status}}}}'"],
+                capture_output=True, text=True
+            )
+            log.append(f"Stav kontejneru: {check.stdout.strip() or 'Neznamy'}")
 
             return {"ok": r.returncode == 0, "log": log}
 
