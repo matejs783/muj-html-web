@@ -9,11 +9,13 @@ TRUENAS_USER = "root"
 DOCKER_IMAGE = "ghcr.io/matejs783/muj-html-web:latest"
 TRUENAS_PORT = 9000
 
+CONTAINER_NAME = "muj-web"
+
 SSH_COMMAND = (
     f"docker pull {DOCKER_IMAGE} && "
-    f"docker stop $(docker ps -q --filter ancestor={DOCKER_IMAGE}) && "
-    f"docker rm $(docker ps -aq --filter ancestor={DOCKER_IMAGE}) && "
-    f"docker run -d -p {TRUENAS_PORT}:80 {DOCKER_IMAGE}"
+    f"docker stop {CONTAINER_NAME} && "
+    f"docker rm {CONTAINER_NAME} && "
+    f"docker run -d --name {CONTAINER_NAME} -p {TRUENAS_PORT}:80 {DOCKER_IMAGE}"
 )
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -74,7 +76,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             check = subprocess.run(
                 ["ssh", "-o", "StrictHostKeyChecking=no",
                  f"{TRUENAS_USER}@{TRUENAS_HOST}",
-                 f"docker ps --filter ancestor={DOCKER_IMAGE} --format '{{{{.Status}}}}'"],
+                 f"docker ps --filter name={CONTAINER_NAME} --format '{{{{.Status}}}}'"],
                 capture_output=True, text=True
             )
             log.append(f"Stav kontejneru: {check.stdout.strip() or 'Neznamy'}")
