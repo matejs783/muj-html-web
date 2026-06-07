@@ -31,7 +31,7 @@
 
         /* Styl tlačítek pro navigaci */
         .nav-btn {
-            background-color: #3498db;
+            background-color: #1abc9c;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -43,7 +43,7 @@
         }
 
         .nav-btn:hover {
-            background-color: #2980b9;
+            background-color: #17a589;
         }
 
         /* Stylování obsahu */
@@ -66,6 +66,42 @@
             display: block;
         }
 
+        .home-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .home-btn {
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            text-align: center;
+            transition: filter 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .home-btn:hover {
+            filter: brightness(0.85);
+        }
+
+        .btn-green {
+            background-color: #2ecc71;
+        }
+
+        .btn-blue {
+            background-color: #5dade2;
+        }
+
+        .btn-red {
+            background-color: #e74c3c;
+        }
+
         footer {
             text-align: center;
             padding: 15px;
@@ -80,14 +116,12 @@
 <body>
 
     <header>
-        <h1>Vítejte na mém webu</h1>
+        <h1>TrueNas Matěj</h1>
     </header>
 
     <nav>
         <button class="nav-btn" onclick="showPage('domu')">Domů</button>
-        <button class="nav-btn" onclick="showPage('o-nas')">O nás</button>
-        <button class="nav-btn" onclick="showPage('sluzby')">Služby</button>
-        <button class="nav-btn" onclick="showPage('kontakt')">Kontakt</button>
+        <button class="nav-btn" onclick="showPage('github')">GitHub</button>
     </nav>
 
     <div class="container">
@@ -95,9 +129,26 @@
         <section id="domu" class="page active">
             <h2>Hlavní stránka</h2>
             <p>Tohle je úvodní stránka vašeho nového webu. Obsah se mění okamžitě po kliknutí na tlačítka nahoře, bez nutnosti znovu načítat celý web.</p>
+            <div class="home-buttons">
+                <a class="home-btn btn-green" href="http://192.168.1.222:30041" target="_blank">Immich</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:20720" target="_blank">PiHole</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:30020" target="_blank">NginxProxy</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:31028" target="_blank">OpenWebUI</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:7000" target="_blank">Odysseus</a>
+                <a class="home-btn btn-blue" href="https://truenas-scale.tailc0a1bd.ts.net:30022/" target="_blank">Vaultwarden</a>
+                <a class="home-btn btn-blue" href="https://jellyfin.tailc0a1bd.ts.net/" target="_blank">Jellyfin</a>
+                <a class="home-btn btn-red" href="http://192.168.1.222:8123/" target="_blank">Home-Assistant</a>
+            </div>
         </section>
 
-        <section id="o-nas" class="page">
+        <section id="github" class="page">
+            <h2>GitHub</h2>
+            <p>Zde najdeš přehled repozitářů a projektů. Pomocí tlačítka níže můžeš publikovat nové změny na GitHub a nasadit je na TrueNAS.</p>
+            <div class="home-buttons">
+                <a class="home-btn btn-green" href="#" onclick="publikovat(event)">Publikovat</a>
+            </div>
+            <p id="publish-status" style="margin-top:15px; font-style:italic; color:#555;"></p>
+        </section>
             <h2>O nás</h2>
             <p>Jsme skvělý tým, který se učí programovat webové stránky. Tento web běží na HTML, CSS a špetce JavaScriptu.</p>
         </section>
@@ -120,16 +171,30 @@
 
     <script>
         function showPage(pageId) {
-            // Najdeme všechny sekce s třídou 'page' a skryjeme je
             const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
-
-            // Ukážeme pouze tu stránku, na jejíž tlačítko se kliklo
+            pages.forEach(page => page.classList.remove('active'));
             const activePage = document.getElementById(pageId);
-            if (activePage) {
-                activePage.classList.add('active');
+            if (activePage) activePage.classList.add('active');
+        }
+
+        async function publikovat(e) {
+            e.preventDefault();
+            const status = document.getElementById('publish-status');
+            status.style.color = '#555';
+            status.textContent = '⏳ Publikuji... (může trvat ~2 minuty)';
+            try {
+                const res = await fetch('http://localhost:5555/publish', { method: 'POST' });
+                const data = await res.json();
+                if (data.ok) {
+                    status.style.color = '#27ae60';
+                    status.textContent = '✅ Hotovo! Nová verze běží na TrueNAS.';
+                } else {
+                    status.style.color = '#e74c3c';
+                    status.textContent = '❌ Chyba: ' + (data.log ? data.log.join(' | ') : 'Neznámá chyba');
+                }
+            } catch (err) {
+                status.style.color = '#e74c3c';
+                status.textContent = '❌ Nelze se připojit k lokálnímu serveru. Je spuštěn start_server.bat?';
             }
         }
     </script>
