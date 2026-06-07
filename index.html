@@ -121,19 +121,32 @@
 
     <nav>
         <button class="nav-btn" onclick="showPage('domu')">Domů</button>
-        <button class="nav-btn" onclick="showPage('github')">GitHub</button>
+        <button class="nav-btn" onclick="githubPin()">GitHub</button>
     </nav>
+
+    <!-- PIN modal -->
+    <div id="pin-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:10px; text-align:center; width:280px;">
+            <h3 style="margin-top:0;">🔒 Zadej PIN</h3>
+            <input id="pin-input" type="password" placeholder="PIN" style="width:100%; padding:10px; font-size:18px; border:2px solid #ccc; border-radius:5px; margin-bottom:10px; box-sizing:border-box;">
+            <p id="pin-error" style="color:#e74c3c; margin:0 0 10px; display:none;">Špatný PIN</p>
+            <button onclick="overitPin()" style="background:#1abc9c; color:white; border:none; padding:10px 30px; border-radius:5px; font-size:16px; cursor:pointer; width:100%;">Potvrdit</button>
+            <br><br>
+            <button onclick="zavritPin()" style="background:#ccc; color:#333; border:none; padding:8px 20px; border-radius:5px; cursor:pointer;">Zrušit</button>
+        </div>
+    </div>
 
     <div class="container">
         
         <section id="domu" class="page active">
-            <h2>Hlavní stránka</h2>
-            <p>Tohle je úvodní stránka vašeho nového webu. Obsah se mění okamžitě po kliknutí na tlačítka nahoře, bez nutnosti znovu načítat celý web...</p>
+            <h2>Seznam aplikací</h2>
+            <p>Na tlačítkách níže jsou dostupné všechny služby mého TrueNAS domácího serveru. Zeleně jsou označené služby bez Tailscale VPN, modře s VPN a červeně nefunkční appky.</p>
             <div class="home-buttons">
+                <a class="home-btn btn-green" href="https://192.168.1.222:444" target="_blank">TrueNAS</a>
                 <a class="home-btn btn-green" href="http://192.168.1.222:30041" target="_blank">Immich</a>
                 <a class="home-btn btn-green" href="http://192.168.1.222:20720" target="_blank">PiHole</a>
-                <a class="home-btn btn-green" href="http://192.168.1.222:30020" target="_blank">NginxProxy</a>
-                <a class="home-btn btn-green" href="http://192.168.1.222:31028" target="_blank">OpenWebUI</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:30020" target="_blank">Nginx Proxy</a>
+                <a class="home-btn btn-green" href="http://192.168.1.222:31028" target="_blank">Open WebUI</a>
                 <a class="home-btn btn-green" href="http://192.168.1.222:7000" target="_blank">Odysseus</a>
                 <a class="home-btn btn-blue" href="https://truenas-scale.tailc0a1bd.ts.net:30022/" target="_blank">Vaultwarden</a>
                 <a class="home-btn btn-blue" href="https://jellyfin.tailc0a1bd.ts.net/" target="_blank">Jellyfin</a>
@@ -143,30 +156,50 @@
 
         <section id="github" class="page">
             <h2>GitHub</h2>
-            <p>Zde najdeš přehled repozitářů a projektů. Pomocí tlačítka níže můžeš publikovat nové změny na GitHub a nasadit je na TrueNAS...</p>
+            <p>Pomocí tlačítka níže můžeš publikovat nové změny na GitHub a nasadit je na TrueNAS. Pro správný export html dokumentu je potřeba: být na PC MS, mít spuštěný soubor "C:\Users\MS\Documents\Truenas\start_server.bat" a provést úpravu v Index.html souboru, aby GitHub mohl publikovat novou verzi. Na TrueNASu se pomocí pythonu "server" automaticky smaže starý docker, stáhne se image z Githubu a nainstaluje se s ní nový docker</p>
             <div class="home-buttons">
                 <a class="home-btn btn-green" href="#" onclick="publikovat(event)">Publikovat</a>
             </div>
             <p id="publish-status" style="margin-top:15px; font-style:italic; color:#555;"></p>
-
-
-        <section id="sluzby" class="page">
-            <h2>Naše Služby</h2>
-            <p>Nabízíme tvorbu jednoduchých, rychlých a přehledných webových aplikací na míru.</p>
-        </section>
-
-        <section id="kontakt" class="page">
-            <h2>Kontakt</h2>
-            <p>Máte dotazy? Napište nám na email: <strong>info@mujweb.cz</strong></p>
         </section>
 
     </div>
 
-    <footer>
-        <p>&copy; 2026 - Matějovo stránka</p>
-    </footer>
+
 
     <script>
+        const SPRAVNY_PIN = "ahooj";
+
+        function githubPin() {
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-error').style.display = 'none';
+            const modal = document.getElementById('pin-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('pin-input').focus(), 100);
+        }
+
+        function zavritPin() {
+            document.getElementById('pin-modal').style.display = 'none';
+        }
+
+        function overitPin() {
+            const zadany = document.getElementById('pin-input').value;
+            if (zadany === SPRAVNY_PIN) {
+                document.getElementById('pin-modal').style.display = 'none';
+                showPage('github');
+            } else {
+                document.getElementById('pin-error').style.display = 'block';
+                document.getElementById('pin-input').value = '';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('pin-modal').style.display === 'flex') {
+                overitPin();
+            }
+            if (e.key === 'Escape') zavritPin();
+        });
+
         function showPage(pageId) {
             const pages = document.querySelectorAll('.page');
             pages.forEach(page => page.classList.remove('active'));
